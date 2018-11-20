@@ -23,15 +23,14 @@ public class Listener {
 	@Autowired
 	SwitchRepository swrepo;
 
-	private final TypeReference<HashMap<String, Object>> TYPE_REF = new TypeReference<HashMap<String, Object>>() {
-	};
-
 	@JmsListener(destination = "switch_manager")
 	public void switchManager(Message jsonMessage) {
 		if (jsonMessage instanceof TextMessage) {
 			TextMessage textMessage = (TextMessage) jsonMessage;
 			try {
 				ObjectMapper mapper = new ObjectMapper();
+				final TypeReference<HashMap<String, Object>> TYPE_REF = new TypeReference<HashMap<String, Object>>() {
+				};
 				Map<String, Object> map = mapper.readValue(textMessage.getText(), TYPE_REF);
 				String type = (String) map.get("Type");
 				Object datajson = map.get("Data");
