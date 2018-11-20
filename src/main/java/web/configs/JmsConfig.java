@@ -31,7 +31,7 @@ public class JmsConfig {
 	public JmsTemplate jmsTopicTemplate() {
 		JmsTemplate template = new JmsTemplate();
 		template.setConnectionFactory(connectionFactory());
-		template.setPubSubDomain(true);
+		template.setPubSubDomain(false);
 		return template;
 	}
 
@@ -41,7 +41,7 @@ public class JmsConfig {
 		factory.setConnectionFactory(connectionFactory());
 		factory.setConcurrency("1-1");
 		
-		factory.setPubSubDomain(true);
+		factory.setPubSubDomain(false);
 
 		return factory;
 	}
