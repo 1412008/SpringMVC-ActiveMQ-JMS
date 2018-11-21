@@ -4,6 +4,7 @@ import java.util.HashMap;
 import java.util.Map;
 
 import javax.jms.Message;
+import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -21,6 +22,9 @@ import web.models.Switch;
 public class Listener {
 
 	@Autowired
+	Producer producer;
+
+	@Autowired
 	SwitchRepository swrepo;
 
 	@JmsListener(destination = "switch_manager")
@@ -36,11 +40,11 @@ public class Listener {
 				Object datajson = map.get("Data");
 				Switch tmp = mapper.convertValue(datajson, Switch.class);
 				if (type.equals("create")) {
-					createSwitch(tmp);
+					producer.sendSwitchMessage("create_switch", tmp);
 				} else if (type.equals("update")) {
-					updateSwitch(tmp);
+					producer.sendSwitchMessage("update_switch", tmp);
 				} else if (type.equals("delete")) {
-					deleteSwitch(tmp);
+					producer.sendSwitchMessage("delete_switch", tmp);
 				}
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
@@ -48,70 +52,97 @@ public class Listener {
 		}
 	}
 
-	private void createSwitch(Switch sw) {
-		if (!sw.IsNullOrEmpty()) {
-			System.out.println(sw);
-			sw.setId(null);
-			String err = sw.checkData();
-			if (err.equals("")) {
-				System.out.println("ok");
-				if (swrepo.insert(sw) != null) {
-					System.out.println("Insert success!");
+	@JmsListener(destination = "create_switch")
+	private void createSwitch(Message objMessage) {
+		if (objMessage instanceof ObjectMessage) {
+			try {
+				ObjectMessage objectMessage = (ObjectMessage) objMessage; 
+				Switch sw = (Switch) objectMessage.getObject();
+				if (!sw.IsNullOrEmpty()) {
+					System.out.println(sw);
+					sw.setId(null);
+					String err = sw.checkData();
+					if (err.equals("")) {
+						System.out.println("ok");
+						if (swrepo.insert(sw) != null) {
+							System.out.println("Insert success!");
+						}
+					} else {
+						System.out.println(err);
+					}
 				}
-			} else {
-				System.out.println(err);
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
 			}
 		}
 	}
 
-	private void updateSwitch(Switch body) {
-		String err = body.checkData();
-		if (err.equals("")) {
-			String mac = body.getMAC();
-			if (!StringUtils.isEmpty(mac)) {
-				mac = normalizeMAC(mac);
-				Switch sw = swrepo.findByMAC(mac);
-				if (sw != null) {
-					System.out.println("Before update: " + sw.toString());
-					if (!StringUtils.isEmpty(body.getName())) {
-						sw.setName(body.getName());
-					}
-					if (!StringUtils.isEmpty(body.getType())) {
-						sw.setType(body.getType());
-					}
-					if (!StringUtils.isEmpty(body.getAddress())) {
-						sw.setAddress(body.getAddress());
-					}
-					if (!StringUtils.isEmpty(body.getVersion())) {
-						sw.setVersion(body.getVersion());
-					}
-					try {
-						if (swrepo.save(sw) != null) {
-							System.out.println("New: " + sw.toString());
+	@JmsListener(destination = "update_switch")
+	private void updateSwitch(Message objMessage) {
+		if (objMessage instanceof ObjectMessage) {
+			try {
+				ObjectMessage objectMessage = (ObjectMessage) objMessage;
+				Switch body = (Switch) objectMessage.getObject();
+				String err = body.checkData();
+				if (err.equals("")) {
+					String mac = body.getMAC();
+					if (!StringUtils.isEmpty(mac)) {
+						mac = normalizeMAC(mac);
+						Switch sw = swrepo.findByMAC(mac);
+						if (sw != null) {
+							System.out.println("Before update: " + sw.toString());
+							if (!StringUtils.isEmpty(body.getName())) {
+								sw.setName(body.getName());
+							}
+							if (!StringUtils.isEmpty(body.getType())) {
+								sw.setType(body.getType());
+							}
+							if (!StringUtils.isEmpty(body.getAddress())) {
+								sw.setAddress(body.getAddress());
+							}
+							if (!StringUtils.isEmpty(body.getVersion())) {
+								sw.setVersion(body.getVersion());
+							}
+							try {
+								if (swrepo.save(sw) != null) {
+									System.out.println("New: " + sw.toString());
+								} else {
+									System.out.println("Update failed.");
+								}
+							} catch (Exception e) {
+								System.out.println(e.getMessage());
+							}
 						} else {
-							System.out.println("Update failed.");
+							System.out.println("This switch doesn't exist!");
+						}
+					}
+				} else {
+					System.out.println(err);
+				}
+			} catch (Exception e) {
+				System.out.println(e.getMessage());
+			}
+		}
+	}
+
+	@JmsListener(destination = "delete_switch")
+	private void deleteSwitch(Message objMessage) {
+		if (objMessage instanceof ObjectMessage) {
+			try {
+				ObjectMessage objectMessage = (ObjectMessage) objMessage;
+				Switch body = (Switch) objectMessage.getObject();
+				String mac = body.getMAC();
+				if (!StringUtils.isEmpty(mac)) {
+					mac = normalizeMAC(mac);
+					Switch sw = swrepo.findByMAC(mac);
+					try {
+						if (sw != null) {
+							System.out.println("Delete " + sw.toString());
+							swrepo.delete(sw);
 						}
 					} catch (Exception e) {
 						System.out.println(e.getMessage());
 					}
-				} else {
-					System.out.println("This switch doesn't exist!");
-				}
-			}
-		} else {
-			System.out.println(err);
-		}
-	}
-
-	private void deleteSwitch(Switch body) {
-		String mac = body.getMAC();
-		if (!StringUtils.isEmpty(mac)) {
-			mac = normalizeMAC(mac);
-			Switch sw = swrepo.findByMAC(mac);
-			try {
-				if (sw != null) {
-					System.out.println("Delete " + sw.toString());
-					swrepo.delete(sw);
 				}
 			} catch (Exception e) {
 				System.out.println(e.getMessage());

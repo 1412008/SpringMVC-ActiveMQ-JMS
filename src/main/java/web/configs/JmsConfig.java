@@ -1,5 +1,7 @@
 package web.configs;
 
+import java.util.Arrays;
+
 import org.apache.activemq.ActiveMQConnectionFactory;
 import org.springframework.context.annotation.Bean;
 import org.springframework.context.annotation.ComponentScan;
@@ -23,7 +25,7 @@ public class JmsConfig {
 		connectionFactory.setBrokerURL(URL);
 		connectionFactory.setUserName(USERNAME);
 		connectionFactory.setPassword(PASSWORD);
-
+		connectionFactory.setTrustedPackages(Arrays.asList("web"));
 		return connectionFactory;
 	}
 

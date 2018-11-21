@@ -56,24 +56,28 @@ public class SwitchController3 {
 	@RequestMapping(value = "switch", method = RequestMethod.POST)
 	public ResponseEntity<HttpStatus> createSwitch(@RequestBody Switch body, HttpServletRequest req) {
 		System.out.println("Creating switch...");
-		SendHelper("create", body);
+		//SendHelper("create", body);
+		producer.sendSwitchMessage("create_switch", body);
 		return ResponseEntity.ok(HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "switch", method = RequestMethod.PUT)
 	public ResponseEntity<HttpStatus> updateSwitch(@RequestBody Switch body) {
 		System.out.println("Updating switch...");
-		SendHelper("update", body);
+		//SendHelper("update", body);
+		producer.sendSwitchMessage("update_switch", body);
 		return ResponseEntity.ok(HttpStatus.OK);
 	}
 
 	@RequestMapping(value = "switch", method = RequestMethod.DELETE)
 	public ResponseEntity<HttpStatus> deleteSwitch(@RequestBody Switch body) {
 		System.out.println("Deleting switch...");
-		SendHelper("delete", body);
+		//SendHelper("delete", body);
+		producer.sendSwitchMessage("delete_switch", body);
 		return ResponseEntity.ok(HttpStatus.OK);
 	}
 
+	@SuppressWarnings("unused")
 	private void SendHelper(String type, Switch body) {
 		Map<String, Object> map = new HashMap<String, Object>();
 		map.put("Type", type);

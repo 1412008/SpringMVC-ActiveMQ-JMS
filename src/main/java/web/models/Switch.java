@@ -1,5 +1,6 @@
 package web.models;
 
+import java.io.Serializable;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -13,7 +14,8 @@ import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 
 @JsonIgnoreProperties(ignoreUnknown = true)
 @Document(collection = "Devices")
-public class Switch {
+public class Switch implements Serializable {
+	private static final long serialVersionUID = 1L;
 	@Id
 	private String id;
 	@Field("Name")
