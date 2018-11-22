@@ -3,6 +3,7 @@ package web.jms;
 import java.util.HashMap;
 import java.util.Map;
 
+import javax.jms.JMSException;
 import javax.jms.Message;
 import javax.jms.ObjectMessage;
 import javax.jms.TextMessage;
@@ -40,11 +41,11 @@ public class Listener {
 				Object datajson = map.get("Data");
 				Switch tmp = mapper.convertValue(datajson, Switch.class);
 				if (type.equals("create")) {
-					producer.sendSwitchMessage("create_switch", tmp);
+					producer.sendSwitchMessage("create_switch", tmp, "createc");
 				} else if (type.equals("update")) {
-					producer.sendSwitchMessage("update_switch", tmp);
+					producer.sendSwitchMessage("update_switch", tmp, "updatec");
 				} else if (type.equals("delete")) {
-					producer.sendSwitchMessage("delete_switch", tmp);
+					producer.sendSwitchMessage("delete_switch", tmp, "deletec");
 				}
 			} catch (Exception e) {
 				System.out.println(e.getMessage());
@@ -52,11 +53,11 @@ public class Listener {
 		}
 	}
 
-	@JmsListener(destination = "create_switch")
+	@JmsListener(destination = "create_switch", selector = "JMSCorrelationID = 'createc'")
 	private void createSwitch(Message objMessage) {
 		if (objMessage instanceof ObjectMessage) {
 			try {
-				ObjectMessage objectMessage = (ObjectMessage) objMessage; 
+				ObjectMessage objectMessage = (ObjectMessage) objMessage;
 				Switch sw = (Switch) objectMessage.getObject();
 				if (!sw.IsNullOrEmpty()) {
 					System.out.println(sw);
@@ -77,7 +78,7 @@ public class Listener {
 		}
 	}
 
-	@JmsListener(destination = "update_switch")
+	@JmsListener(destination = "update_switch", selector = "JMSCorrelationID = 'updatec'")
 	private void updateSwitch(Message objMessage) {
 		if (objMessage instanceof ObjectMessage) {
 			try {
@@ -125,7 +126,7 @@ public class Listener {
 		}
 	}
 
-	@JmsListener(destination = "delete_switch")
+	@JmsListener(destination = "delete_switch", selector = "JMSCorrelationID = 'deletec'")
 	private void deleteSwitch(Message objMessage) {
 		if (objMessage instanceof ObjectMessage) {
 			try {
@@ -139,6 +140,8 @@ public class Listener {
 						if (sw != null) {
 							System.out.println("Delete " + sw.toString());
 							swrepo.delete(sw);
+						} else {
+							System.out.println("This switch doesn't exist!");
 						}
 					} catch (Exception e) {
 						System.out.println(e.getMessage());

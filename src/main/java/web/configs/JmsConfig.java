@@ -33,7 +33,10 @@ public class JmsConfig {
 	public JmsTemplate jmsTopicTemplate() {
 		JmsTemplate template = new JmsTemplate();
 		template.setConnectionFactory(connectionFactory());
+		template.setDeliveryPersistent(true);
 		template.setPubSubDomain(false);
+		template.setExplicitQosEnabled(true);
+		template.setTimeToLive(5*60*60*1000);
 		return template;
 	}
 

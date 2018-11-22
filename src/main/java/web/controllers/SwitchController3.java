@@ -57,7 +57,7 @@ public class SwitchController3 {
 	public ResponseEntity<HttpStatus> createSwitch(@RequestBody Switch body, HttpServletRequest req) {
 		System.out.println("Creating switch...");
 		//SendHelper("create", body);
-		producer.sendSwitchMessage("create_switch", body);
+		producer.sendSwitchMessage("create_switch", body, "createc");
 		return ResponseEntity.ok(HttpStatus.OK);
 	}
 
@@ -65,7 +65,7 @@ public class SwitchController3 {
 	public ResponseEntity<HttpStatus> updateSwitch(@RequestBody Switch body) {
 		System.out.println("Updating switch...");
 		//SendHelper("update", body);
-		producer.sendSwitchMessage("update_switch", body);
+		producer.sendSwitchMessage("update_switch", body, "updatec");
 		return ResponseEntity.ok(HttpStatus.OK);
 	}
 
@@ -73,7 +73,7 @@ public class SwitchController3 {
 	public ResponseEntity<HttpStatus> deleteSwitch(@RequestBody Switch body) {
 		System.out.println("Deleting switch...");
 		//SendHelper("delete", body);
-		producer.sendSwitchMessage("delete_switch", body);
+		producer.sendSwitchMessage("delete_switch", body, "deletec");
 		return ResponseEntity.ok(HttpStatus.OK);
 	}
 

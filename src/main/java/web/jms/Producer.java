@@ -16,7 +16,7 @@ public class Producer {
 	@Autowired
 	private JmsTemplate jmsTemplate;
 
-	public void sendMessage(final String destinationName, final String message) {		
+	public void sendMessage(final String destinationName, final String message) {
 		try {
 			jmsTemplate.send(destinationName, new MessageCreator() {
 				public Message createMessage(Session session) throws JMSException {
@@ -28,13 +28,15 @@ public class Producer {
 			System.out.println(e.getMessage());
 		}
 	}
-	
-	public void sendSwitchMessage(final String destinationName, final Switch message) {		
+
+	public void sendSwitchMessage(final String destinationName, final Switch message, final String correlation) {
 		try {
 			jmsTemplate.send(destinationName, new MessageCreator() {
 				public Message createMessage(Session session) throws JMSException {
-					System.out.println("Sending message to " + destinationName);
-					return session.createObjectMessage(message);
+					System.out.println("Sending message to " + destinationName + " - " + correlation);
+					Message rs = session.createObjectMessage(message);
+					rs.setJMSCorrelationID(correlation);
+					return rs;
 				}
 			});
 		} catch (Exception e) {
